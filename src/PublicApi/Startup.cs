@@ -17,8 +17,11 @@ using Microsoft.eShopWeb.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -51,8 +54,10 @@ namespace Microsoft.eShopWeb.PublicApi
 
         private void ConfigureInMemoryDatabases(IServiceCollection services)
         {
+            var connectionStringValue = Configuration["ConnectionStringAzureSql"];
+
             services.AddDbContext<CatalogContext>(c =>
-                c.UseInMemoryDatabase("Catalog"));
+                c.UseSqlServer(connectionStringValue));
 
             services.AddDbContext<AppIdentityDbContext>(options =>
                 options.UseInMemoryDatabase("Identity"));
@@ -167,11 +172,16 @@ namespace Microsoft.eShopWeb.PublicApi
                     }
                 });
             });
+            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env/*, ILogger<Startup> logger*/)
         {
+            /*logger.LogInformation(
+                "Configuring for {Environment} environment",
+                env.EnvironmentName);*/
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

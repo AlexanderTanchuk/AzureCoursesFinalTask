@@ -42,11 +42,16 @@ namespace Microsoft.eShopWeb.Web
 
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
-            // use in-memory database
-            ConfigureInMemoryDatabases(services);
 
-            // use real database
-            //ConfigureProductionServices(services);
+            var connectionStringValue = Configuration[Constants.SQL_CONNECTION_STRING];
+
+            services.AddDbContext<CatalogContext>(c =>
+                c.UseSqlServer(connectionStringValue));
+
+            services.AddDbContext<AppIdentityDbContext>(options =>
+                options.UseInMemoryDatabase("Identity"));
+
+            ConfigureServices(services);
         }
 
         public void ConfigureDockerServices(IServiceCollection services)
